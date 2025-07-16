@@ -49,18 +49,18 @@ export function WalletConnect({ isOpen, onClose }: WalletConnectProps) {
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Wallet className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                Connect Your Wallet
-              </div>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                Please connect your BSC wallet to access tasks and earn rewards
-              </p>
+            <DialogTitle className="text-center text-xl font-bold text-gray-800 dark:text-white">
+              Connect Your Wallet
             </DialogTitle>
           </DialogHeader>
+          <div className="text-center mb-4">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Wallet className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Please connect your BSC wallet to access tasks and earn rewards
+            </p>
+          </div>
           
           <div className="space-y-3">
             <Button

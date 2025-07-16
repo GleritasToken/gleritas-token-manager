@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Check } from "lucide-react";
 
 interface SuccessPopupProps {
@@ -12,6 +12,10 @@ export function SuccessPopup({ isOpen, onClose, title, message }: SuccessPopupPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="sr-only">{title}</DialogTitle>
+          <DialogDescription className="sr-only">{message}</DialogDescription>
+        </DialogHeader>
         <div className="text-center py-4">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-600 dark:text-green-400" />

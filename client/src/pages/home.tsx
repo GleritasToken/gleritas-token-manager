@@ -102,7 +102,7 @@ export default function Home() {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {user.points.toLocaleString()} Points
+                  {user.points?.toLocaleString() || 0} Points
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">Total Balance</div>
               </div>
