@@ -1,0 +1,77 @@
+# GLRS Token Airdrop Platform
+
+A comprehensive platform for the GLRS token airdrop, social media task verification, and blockchain token distribution.
+
+Users earns point in app in which owners of project help them convert into tokens later on
+ 
+## Features
+
+- 🔒 **Secure Authentication**: User registration and login system with session management
+- 🔗 **Blockchain Integration**: BSC wallet address validation and token distribution
+- 🏆 **Social Media Tasks**: Complete tasks on various platforms to earn points
+- 👥 **Referral System**: Earn bonus points by referring friends (max 50 referrals)
+- 💸 **Withdrawal System**: Request points withdrawals with BNB fee collection
+
+## License
+
+This project is proprietary. All rights reserved.
+
+## Support
+
+For support or questions, please contact the GLRS token team through the official Telegram group at [https://t.me/gleritaschat](https://t.me/gleritaschat).
+
+## Resources
+
+- [GLRS Token Whitepaper](https://drive.google.com/file/d/1d1e154XQTxAb-JRizElQgGpjMx8yJvmk/view?usp=drive_link)
+- [Telegram Group](https://t.me/+hcJdayisPFIxOGVk)
+- [Telegram Channel](https://t.me/gleritaschat)
+
+This app will be into 5 navigation sections 
+Home - which shows their username, wallet connect button, points balance, Logout button, New Tasks added and Tasks completed (max of 5, if more than that there should be a show more button that will show other completed tasks)
+Tasks - which users can toggle between uncompleted and completed tasks
+Referral - here users can see their referrals, the points earned through referrals and their referral codes, there will be what can be used to show how many referrals they have against the 50 max
+Withdrawal - where users can claim their points (but this section will currently be locked until further notice)
+About - showing about the project, support and contact section
+
+I love what i'm seeing, now let's allow this to be able to switch between light and dark mode
+
+the wallet connect button should have manual connect so it can allow connecting to users wallet apps
+
+on the withdrawal page, 
+Important Notice:
+
+*The withdrawal system is currently locked till airdrop ends. We are working on implementing a secure token distribution mechanism. Once ready, you'll be able to withdraw GLRS tokens directly to your connected wallet.* this is what I want written there and also remove the pay bnb fee from there
+
+on the about page, remove the *how it works tab*, change the header *resources* to *to learn more about gleritas*
+
+and change the about should be *Gleritas (GLRS) is a next-generation blockchain-powered cryptocurrency
+built to seamlessly connect the world of digital assets with the fast-growing
+e-commerce industry. Our mission is to empower both merchants and
+consumers by providing fast, secure, and cost-effective payment solutions
+that goes beyond traditional systems.*
+
+and add tokenomics the about page and you can also make it look nice in like a 3d graphical way
+Tokenomics:
+Total Supply: 1,000,000,000 Tokens
+Pre-Sale: 25%
+Liquidity & Exchanges: 20%
+Staking and Rewards: 20%
+Development & Marketing: 20%
+Airdrop Campaign: 5%
+Team & Advisors: 10%
+
+Now, let create a cool crypto landing page for the project that will depict a crypto system for e-commerce use and will have the login and sign-up toggle  
+
+Sign up page should include where users can add referral codes and code owners get awarded 250 points per referrals 
+
+after each successful sign-up there should be an animated pop-up saying *Registration Successful, Welcome to Gleritas* and they automatically get directed to users homepage and get awarded 500 points for registration
+
+Homepage shows pop-up requiring users manually connects their BSC wallets (they won't be able to access any task if wallet not connected). After connecting Wallet, a *Wallet successfully connected* message pops up and disappears. Users gets awarded 100 points for wallet connect
+
+let's edit the tasks page. clear all existing tasks and create new tasks in the following order 
+1. Referral Task (Users must refer at least 3 users) this task earns them 500 points on completion
+2. Join Telegram Group Task
+3. Join Telegram Channel Task
+4. Follow Twitter Page Task
+5. Subscribe to Youtube Channel Task
+6. Like Youtube Video Task
