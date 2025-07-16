@@ -6,7 +6,10 @@ import {
   loginSchema, 
   walletConnectSchema, 
   insertTaskSchema,
-  type User
+  adminLoginSchema,
+  insertAdminSchema,
+  type User,
+  type Admin
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -17,6 +20,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
+      admin?: Admin;
     }
   }
 }
@@ -43,9 +47,42 @@ const authenticateUser = async (req: Request, res: Response, next: NextFunction)
   next();
 };
 
+// Middleware for admin authentication
+const authenticateAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const adminSessionId = req.cookies.adminSessionId;
+  
+  if (!adminSessionId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  try {
+    const adminId = parseInt(adminSessionId);
+    const admin = await storage.getAdminByUsername("Gleritastoken@gmail.com");
+    
+    if (!admin || admin.id !== adminId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    req.admin = admin;
+    next();
+  } catch {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Enable cookie parsing
   app.use(cookieParser());
+  
+  // Initialize default admin if it doesn't exist
+  const existingAdmin = await storage.getAdminByUsername("Gleritastoken@gmail.com");
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash("Gtoken234@@", 10);
+    await storage.createAdmin({
+      username: "Gleritastoken@gmail.com",
+      password: hashedPassword,
+    });
+  }
   
   // Initialize default tasks
   const defaultTasks = [
@@ -247,6 +284,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Get referrals error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Admin routes
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { username, password } = adminLoginSchema.parse(req.body);
+      
+      const admin = await storage.getAdminByUsername(username);
+      if (!admin) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      const isValid = await bcrypt.compare(password, admin.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Set admin session cookie
+      res.cookie('adminSessionId', admin.id.toString(), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      });
+      
+      res.json({
+        admin: { id: admin.id, username: admin.username },
+        message: "Admin login successful",
+      });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.post('/api/admin/logout', authenticateAdmin, async (req, res) => {
+    res.clearCookie('adminSessionId');
+    res.json({ message: "Admin logout successful" });
+  });
+  
+  app.get('/api/admin/me', authenticateAdmin, async (req, res) => {
+    res.json({
+      admin: { id: req.admin.id, username: req.admin.username },
+    });
+  });
+  
+  app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users.map(user => ({ ...user, password: undefined })));
+    } catch (error) {
+      console.error("Get users error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.get('/api/admin/tasks', authenticateAdmin, async (req, res) => {
+    try {
+      const tasks = await storage.getAllTasksForAdmin();
+      res.json(tasks);
+    } catch (error) {
+      console.error("Get tasks error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.post('/api/admin/tasks', authenticateAdmin, async (req, res) => {
+    try {
+      const taskData = insertTaskSchema.parse(req.body);
+      const task = await storage.createTask(taskData);
+      res.json(task);
+    } catch (error) {
+      console.error("Create task error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.put('/api/admin/tasks/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const updates = req.body;
+      const task = await storage.updateTask(taskId, updates);
+      res.json(task);
+    } catch (error) {
+      console.error("Update task error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.delete('/api/admin/tasks/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      await storage.deleteTask(taskId);
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error("Delete task error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.deleteUser(userId);
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Delete user error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

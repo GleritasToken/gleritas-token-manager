@@ -4,6 +4,7 @@ import {
   userTasks, 
   referrals, 
   sessions,
+  admins,
   type User, 
   type InsertUser, 
   type Task, 
@@ -11,7 +12,9 @@ import {
   type UserTask,
   type InsertUserTask,
   type Referral,
-  type InsertReferral
+  type InsertReferral,
+  type Admin,
+  type InsertAdmin
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, count, gt, sql } from "drizzle-orm";
@@ -43,6 +46,15 @@ export interface IStorage {
   createSession(userId: number): Promise<{ id: string; expiresAt: Date }>;
   getSession(sessionId: string): Promise<{ userId: number } | undefined>;
   deleteSession(sessionId: string): Promise<void>;
+  
+  // Admin operations
+  getAdminByUsername(username: string): Promise<Admin | undefined>;
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
+  getAllUsers(): Promise<User[]>;
+  getAllTasksForAdmin(): Promise<Task[]>;
+  updateTask(id: number, updates: Partial<Task>): Promise<Task>;
+  deleteTask(id: number): Promise<void>;
+  deleteUser(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -212,6 +224,47 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSession(sessionId: string): Promise<void> {
     await db.delete(sessions).where(eq(sessions.id, sessionId));
+  }
+  
+  // Admin operations
+  async getAdminByUsername(username: string): Promise<Admin | undefined> {
+    const [admin] = await db.select().from(admins).where(eq(admins.username, username));
+    return admin;
+  }
+  
+  async createAdmin(adminData: InsertAdmin): Promise<Admin> {
+    const [admin] = await db.insert(admins).values(adminData).returning();
+    return admin;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+  
+  async getAllTasksForAdmin(): Promise<Task[]> {
+    return await db.select().from(tasks).orderBy(desc(tasks.createdAt));
+  }
+  
+  async updateTask(id: number, updates: Partial<Task>): Promise<Task> {
+    const [task] = await db
+      .update(tasks)
+      .set(updates)
+      .where(eq(tasks.id, id))
+      .returning();
+    return task;
+  }
+  
+  async deleteTask(id: number): Promise<void> {
+    await db.delete(userTasks).where(eq(userTasks.taskId, id));
+    await db.delete(tasks).where(eq(tasks.id, id));
+  }
+  
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(userTasks).where(eq(userTasks.userId, id));
+    await db.delete(referrals).where(eq(referrals.referrerId, id));
+    await db.delete(referrals).where(eq(referrals.referredUserId, id));
+    await db.delete(sessions).where(eq(sessions.userId, id));
+    await db.delete(users).where(eq(users.id, id));
   }
 }
 

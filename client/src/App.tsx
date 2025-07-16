@@ -11,6 +11,8 @@ import Tasks from "@/pages/tasks";
 import Referral from "@/pages/referral";
 import Withdrawal from "@/pages/withdrawal";
 import About from "@/pages/about";
+import AdminLogin from "@/pages/admin-login";
+import AdminDashboard from "@/pages/admin-dashboard";
 import BottomNav from "@/components/bottom-nav";
 import NotFound from "@/pages/not-found";
 
@@ -28,7 +30,10 @@ function AppContent() {
     );
   }
 
-  if (!user) {
+  // Check if on admin routes
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
+  
+  if (!user && !isAdminRoute) {
     return <Landing />;
   }
 
@@ -40,9 +45,12 @@ function AppContent() {
         <Route path="/referral" component={Referral} />
         <Route path="/withdrawal" component={Withdrawal} />
         <Route path="/about" component={About} />
+        <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route component={NotFound} />
       </Switch>
-      <BottomNav />
+      {/* Only show bottom nav for authenticated users and not on admin pages */}
+      {user && !isAdminRoute && <BottomNav />}
     </div>
   );
 }

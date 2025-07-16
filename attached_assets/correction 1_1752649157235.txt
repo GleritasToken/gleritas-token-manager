@@ -1,0 +1,4 @@
+I can't find referral code on the referral page, work on that by making sure a unique code is generated for a user at which they can refer their friends
+
+After that, let's create the admin page from where the admins can manage (add, edit, remove) tasks, users and literally everything on the page set Admin Username = Gleritastoken@gmail.com
+aet Admin Password = Gtoken234@@
