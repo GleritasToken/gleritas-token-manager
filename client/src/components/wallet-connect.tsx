@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SuccessPopup } from "./success-popup";
-import { Wallet, Copy, Check } from "lucide-react";
+import { Wallet } from "lucide-react";
 
 interface WalletConnectProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ interface WalletConnectProps {
 export function WalletConnect({ isOpen, onClose }: WalletConnectProps) {
   const [walletAddress, setWalletAddress] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [copied, setCopied] = useState(false);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -57,17 +57,7 @@ export function WalletConnect({ isOpen, onClose }: WalletConnectProps) {
     walletConnectMutation.mutate(walletAddress.trim());
   };
 
-  const handleCopyExample = () => {
-    const exampleAddress = "0x1234567890123456789012345678901234567890";
-    navigator.clipboard.writeText(exampleAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({
-      title: "Copied!",
-      description: "Example address copied to clipboard",
-      variant: "default",
-    });
-  };
+
 
   return (
     <>
@@ -103,23 +93,7 @@ export function WalletConnect({ isOpen, onClose }: WalletConnectProps) {
               />
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-600 dark:text-gray-400">Example format:</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCopyExample}
-                  className="h-6 text-xs"
-                >
-                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                </Button>
-              </div>
-              <code className="text-xs text-gray-700 dark:text-gray-300 break-all">
-                0x1234567890123456789012345678901234567890
-              </code>
-            </div>
+
 
             <Button
               type="submit"
