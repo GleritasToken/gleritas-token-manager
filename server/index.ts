@@ -71,6 +71,7 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
+  // Use Railway's PORT or default to 5000
   const port = parseInt(process.env.PORT || '5000', 10);
   const host = process.env.NODE_ENV === "development" ? "localhost" : "0.0.0.0";
   
@@ -80,5 +81,6 @@ app.use((req, res, next) => {
   }, () => {
     log(`🚀 Server running on ${host}:${port}`);
     log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    log(`🌐 App URL: ${process.env.RAILWAY_STATIC_URL || `http://${host}:${port}`}`);
   });
 })();
