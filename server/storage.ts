@@ -80,6 +80,8 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(userData: InsertUser): Promise<User> {
     const referralCode = nanoid(10).toUpperCase();
+    console.log("Creating user with referral code:", referralCode);
+    
     const [user] = await db
       .insert(users)
       .values({
@@ -88,6 +90,8 @@ export class DatabaseStorage implements IStorage {
         points: 500, // Registration bonus
       })
       .returning();
+    
+    console.log("User created successfully:", { id: user.id, username: user.username, referralCode: user.referralCode });
     
     // Create user tasks for all active tasks
     const activeTasks = await db.select().from(tasks).where(eq(tasks.isActive, true));

@@ -273,15 +273,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Referral routes
   app.get('/api/referrals', authenticateUser, async (req, res) => {
     try {
+      console.log("Referral API called for user:", req.user.id);
+      console.log("User referral code:", req.user.referralCode);
+      
       const referrals = await storage.getReferralsByUserId(req.user.id);
       const referralCount = await storage.getReferralCount(req.user.id);
       
-      res.json({
+      const response = {
         referrals,
         referralCount,
         referralCode: req.user.referralCode,
         totalEarnings: referrals.length * 250,
-      });
+      };
+      
+      console.log("Referral API response:", response);
+      
+      res.json(response);
     } catch (error) {
       console.error("Get referrals error:", error);
       res.status(500).json({ message: "Internal server error" });

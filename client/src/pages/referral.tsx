@@ -6,14 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
-import { Users, Copy, Award, User } from "lucide-react";
+import { Users, Copy, Award, User, AlertCircle } from "lucide-react";
 
 export default function Referral() {
-  const { user } = useAuth();
+  const { user, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
 
-  const { data: referralData, isLoading } = useQuery({
+  const { data: referralData, isLoading: referralLoading } = useQuery({
     queryKey: ["/api/referrals"],
+    enabled: !!user, // Only fetch if user is authenticated
   });
 
   const copyReferralCode = async () => {
@@ -32,15 +33,38 @@ export default function Referral() {
           variant: "destructive",
         });
       }
+    } else {
+      toast({
+        title: "No Referral Code",
+        description: "Referral code not available",
+        variant: "destructive",
+      });
     }
   };
 
-  if (isLoading) {
+  // Show loading state
+  if (userLoading || referralLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading referral data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
+            Please log in to access your referral dashboard
+          </p>
         </div>
       </div>
     );
@@ -78,17 +102,24 @@ export default function Referral() {
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Your Referral Code</p>
               <div className="flex items-center space-x-2">
                 <Input
-                  value={user?.referralCode || ""}
+                  value={user?.referralCode || "No referral code available"}
                   readOnly
                   className="flex-1 bg-gray-50 dark:bg-gray-700 font-mono text-center text-lg font-semibold"
+                  placeholder="Loading referral code..."
                 />
                 <Button
                   onClick={copyReferralCode}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={!user?.referralCode}
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400"
                 >
                   <Copy className="w-4 h-4" />
                 </Button>
               </div>
+              {!user?.referralCode && (
+                <p className="text-xs text-red-500 dark:text-red-400 mt-2">
+                  Referral code not found. Please contact support if this persists.
+                </p>
+              )}
             </div>
 
             {/* Referral Stats */}
