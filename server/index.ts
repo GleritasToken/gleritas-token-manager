@@ -3,6 +3,11 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Set default environment for Railway
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'production';
+}
+
 // Simple logging function
 const logMessage = (message: string) => {
   console.log(`[${new Date().toISOString()}] ${message}`);
