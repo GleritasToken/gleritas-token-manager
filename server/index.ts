@@ -73,7 +73,9 @@ app.get('/', (req, res) => {
 
 (async () => {
   try {
-    log("Starting server initialization...");
+    log("🚀 Starting Gleritas Token Manager server...");
+    log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    log(`🔗 Database URL: ${process.env.DATABASE_URL ? 'configured' : 'NOT CONFIGURED'}`);
     
     const server = await registerRoutes(app);
 
@@ -81,22 +83,19 @@ app.get('/', (req, res) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
 
-      log(`Error: ${message}`);
+      log(`❌ Error: ${status} - ${message}`);
       res.status(status).json({ message });
     });
 
     // Setup Vite in development mode
     if (process.env.NODE_ENV === "development") {
-      log("Setting up Vite for development...");
       await setupVite(app, server);
     } else {
-      log("Setting up static file serving for production...");
       serveStatic(app);
     }
 
-    // Use Railway's PORT or default to 5000
     const port = parseInt(process.env.PORT || '5000', 10);
-    const host = "0.0.0.0"; // Always bind to all interfaces on Railway
+    const host = process.env.NODE_ENV === "development" ? "localhost" : "0.0.0.0";
     
     server.listen({
       port,
@@ -104,18 +103,10 @@ app.get('/', (req, res) => {
     }, () => {
       log(`🚀 Server running on ${host}:${port}`);
       log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      log(`🌐 Health check: http://${host}:${port}/health`);
-      log(`🏠 Root endpoint: http://${host}:${port}/`);
+      log(`✅ Gleritas Token Manager is ready!`);
     });
-
-    // Handle server errors
-    server.on('error', (error) => {
-      log(`Server error: ${error.message}`);
-      process.exit(1);
-    });
-
   } catch (error) {
-    log(`Failed to start server: ${error}`);
+    log(`❌ Failed to start server: ${error}`);
     process.exit(1);
   }
 })();

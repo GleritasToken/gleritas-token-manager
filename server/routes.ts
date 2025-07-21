@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       status: 'ok', 
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
-      port: process.env.PORT || '5000'
+      database: process.env.DATABASE_URL ? 'configured' : 'not configured'
     });
   });
 
