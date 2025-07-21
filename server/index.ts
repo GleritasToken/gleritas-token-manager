@@ -3,7 +3,15 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Simple logging function
+const logMessage = (message: string) => {
+  console.log(`[${new Date().toISOString()}] ${message}`);
+};
+
+// Create Express app
 const app = express();
+
+// Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -23,6 +31,7 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -46,54 +55,71 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      logMessage(logLine);
     }
   });
 
   next();
 });
 
-// Simple health check endpoint
+// CRITICAL: Health check endpoint - must be first and simple
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || '5000'
-  });
+  try {
+    res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || '5000',
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
-// Simple root endpoint for health check
+// Simple root endpoint
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Gleritas Token Manager API is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
   });
 });
 
-(async () => {
+// Main server startup
+const startServer = async () => {
   try {
-    log("🚀 Starting Gleritas Token Manager server...");
-    log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    log(`🔗 Database URL: ${process.env.DATABASE_URL ? 'configured' : 'NOT CONFIGURED'}`);
+    logMessage("🚀 Starting Gleritas Token Manager server...");
+    logMessage(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logMessage(`🔗 Database URL: ${process.env.DATABASE_URL ? 'configured' : 'NOT CONFIGURED'}`);
+    logMessage(`🌐 Port: ${process.env.PORT || '5000'}`);
     
+    // Register routes (this includes database initialization)
     const server = await registerRoutes(app);
 
+    // Global error handler
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
 
-      log(`❌ Error: ${status} - ${message}`);
+      logMessage(`❌ Error: ${status} - ${message}`);
       res.status(status).json({ message });
     });
 
-    // Setup Vite in development mode
+    // Setup static files or Vite based on environment
     if (process.env.NODE_ENV === "development") {
+      logMessage("🔧 Setting up Vite for development...");
       await setupVite(app, server);
     } else {
+      logMessage("📁 Setting up static file serving for production...");
       serveStatic(app);
     }
 
+    // Start the server
     const port = parseInt(process.env.PORT || '5000', 10);
     const host = process.env.NODE_ENV === "development" ? "localhost" : "0.0.0.0";
     
@@ -101,12 +127,24 @@ app.get('/', (req, res) => {
       port,
       host,
     }, () => {
-      log(`🚀 Server running on ${host}:${port}`);
-      log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      log(`✅ Gleritas Token Manager is ready!`);
+      logMessage(`🚀 Server running on ${host}:${port}`);
+      logMessage(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logMessage(`✅ Gleritas Token Manager is ready!`);
+      logMessage(`🏥 Health check: http://${host}:${port}/health`);
+      logMessage(`🏠 Root endpoint: http://${host}:${port}/`);
     });
+
+    // Handle server errors
+    server.on('error', (error) => {
+      logMessage(`❌ Server error: ${error.message}`);
+      process.exit(1);
+    });
+
   } catch (error) {
-    log(`❌ Failed to start server: ${error}`);
+    logMessage(`❌ Failed to start server: ${error}`);
     process.exit(1);
   }
-})();
+};
+
+// Start the server
+startServer();
