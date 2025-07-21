@@ -71,6 +71,27 @@ const authenticateAdmin = async (req: Request, res: Response, next: NextFunction
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const server = createServer(app);
+
+  // Health check endpoint - place this FIRST
+  app.get('/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: process.env.DATABASE_URL ? 'configured' : 'not configured'
+    });
+  });
+
+  // Simple root endpoint for testing
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: 'Gleritas Token Manager API',
+      status: 'running',
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Enable cookie parsing
   app.use(cookieParser());
   
@@ -103,16 +124,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
   
-  // Health check endpoint
-  app.get('/health', (req, res) => {
-    res.json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      database: process.env.DATABASE_URL ? 'configured' : 'not configured'
-    });
-  });
-
   // Auth routes
   app.post('/api/auth/signup', async (req, res) => {
     try {
@@ -413,6 +424,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  const httpServer = createServer(app);
-  return httpServer;
+  return server;
 }
