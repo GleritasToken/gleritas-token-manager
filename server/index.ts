@@ -53,32 +53,69 @@ app.use((req, res, next) => {
   next();
 });
 
+// Simple health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || '5000'
+  });
+});
+
+// Simple root endpoint for health check
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Gleritas Token Manager API is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    log("Starting server initialization...");
+    
+    const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
-  });
+      log(`Error: ${message}`);
+      res.status(status).json({ message });
+    });
 
-  // Setup Vite in development mode
-  if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    // Setup Vite in development mode
+    if (process.env.NODE_ENV === "development") {
+      log("Setting up Vite for development...");
+      await setupVite(app, server);
+    } else {
+      log("Setting up static file serving for production...");
+      serveStatic(app);
+    }
+
+    // Use Railway's PORT or default to 5000
+    const port = parseInt(process.env.PORT || '5000', 10);
+    const host = "0.0.0.0"; // Always bind to all interfaces on Railway
+    
+    server.listen({
+      port,
+      host,
+    }, () => {
+      log(`🚀 Server running on ${host}:${port}`);
+      log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      log(`🌐 Health check: http://${host}:${port}/health`);
+      log(`🏠 Root endpoint: http://${host}:${port}/`);
+    });
+
+    // Handle server errors
+    server.on('error', (error) => {
+      log(`Server error: ${error.message}`);
+      process.exit(1);
+    });
+
+  } catch (error) {
+    log(`Failed to start server: ${error}`);
+    process.exit(1);
   }
-
-  const port = parseInt(process.env.PORT || '5000', 10);
-  const host = process.env.NODE_ENV === "development" ? "localhost" : "0.0.0.0";
-  
-  server.listen({
-    port,
-    host,
-  }, () => {
-    log(`🚀 Server running on ${host}:${port}`);
-    log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
 })();
